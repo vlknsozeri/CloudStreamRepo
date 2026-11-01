@@ -1,0 +1,8 @@
+{
+  "name": "CloudStream TR Eklentileri",
+  "description": "Dizipal, Yabancı Dizi ve HdFilmCehennemi reklamsız sağlayıcıları",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/vlknsozeri/CloudStreamRepo/builds/plugins.json"
+  ]
+}
