@@ -2,6 +2,10 @@ package com.fsociety
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
 
 class DizipalProvider : MainAPI() {
@@ -91,13 +95,12 @@ class DizipalProvider : MainAPI() {
         val isTvSeries = url.contains("/dizi/")
 
         if (isTvSeries) {
-            val episodes = document.select(".episode-item, a[href*='/bolum-'], a[href*='/sezon-']").mapNotNull { ep ->
+            val episodes = document.select(".detail-episode-item, .episode-item, a[href*='/bolum/'], a[href*='/sezon-'], a[href*='-bolum']").mapNotNull { ep ->
                 val epHref = fixUrlNull(ep.attr("href")) ?: return@mapNotNull null
-                val epName = ep.selectFirst(".episode-name, .title")?.text() ?: ep.text().ifBlank { "Bölüm" }
+                val epName = ep.selectFirst(".detail-episode-name, .episode-name, .title")?.text() ?: ep.text().ifBlank { "Bölüm" }
 
-                // Sezon ve bölüm numarasını URL veya metinden yakala
-                val seasonMatch = Regex("""sezon-(\d+)""").find(epHref)
-                val episodeMatch = Regex("""bolum-(\d+)""").find(epHref)
+                val seasonMatch = Regex("""(\d+)[-.]sezon""").find(epHref) ?: Regex("""sezon[-.](\d+)""").find(epHref)
+                val episodeMatch = Regex("""(\d+)[-.]bolum""").find(epHref) ?: Regex("""bolum[-.](\d+)""").find(epHref)
 
                 val seasonNum = seasonMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
                 val episodeNum = episodeMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
@@ -109,7 +112,7 @@ class DizipalProvider : MainAPI() {
                 }
             }
 
-            return newTvSeriesLoadResponse(title.cleanTitle(), url, TvType.TvSeries, episodes) {
+            return newTvSeriesLoadResponse(title.cleanTitle(), url, TvType.TvSeries, episodes.distinctBy { it.data }) {
                 this.posterUrl = posterUrl
                 this.plot = description
             }
@@ -128,6 +131,40 @@ class DizipalProvider : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data, headers = Utils.defaultHeaders).document
+
+        val iframe = document.selectFirst(".series-player-container iframe, div#vast_new iframe, div#video-area iframe, iframe[src]")?.attr("src")
+
+        if (!iframe.isNullOrBlank()) {
+            val cleanIframe = when {
+                iframe.startsWith("//") -> "https:$iframe"
+                iframe.startsWith("/") -> "${mainUrl}$iframe"
+                else -> iframe
+            }
+
+            try {
+                val iSource = app.get(cleanIframe, referer = "$mainUrl/", headers = Utils.defaultHeaders).text
+                val m3uLink = Regex("""file:\s*"([^"]+)"""").find(iSource)?.groupValues?.get(1)
+                    ?: Regex("""(https?:[^\s"']+\.m3u8[^\s"']*)""").find(iSource)?.groupValues?.get(1)
+
+                if (!m3uLink.isNullOrBlank()) {
+                    callback.invoke(
+                        newExtractorLink(
+                            source = "Dizipal",
+                            name = "Dizipal (HLS)",
+                            url = m3uLink,
+                            type = ExtractorLinkType.M3U8
+                        ) {
+                            this.referer = "$mainUrl/"
+                            this.quality = Qualities.P1080.value
+                        }
+                    )
+                    return true
+                }
+            } catch (_: Exception) {}
+
+            return loadExtractor(cleanIframe, "$mainUrl/", subtitleCallback, callback)
+        }
+
         return Utils.extractAllVideoSources(document, data, subtitleCallback, callback)
     }
 

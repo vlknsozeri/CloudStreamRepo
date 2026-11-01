@@ -10,6 +10,7 @@ class TurkishPlugin : Plugin() {
         // CloudStream'e Türkçe sağlayıcıları kaydet
         registerMainAPI(DizipalProvider())
         registerMainAPI(HdFilmCehennemiProvider())
+        registerMainAPI(DiziBoxProvider())
         registerMainAPI(YabanciDiziProvider())
     }
 }

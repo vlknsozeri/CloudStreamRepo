@@ -2,6 +2,10 @@ package com.fsociety
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Element
 
 class HdFilmCehennemiProvider : MainAPI() {
@@ -82,7 +86,6 @@ class HdFilmCehennemiProvider : MainAPI() {
         val isTvSeries = url.contains("/dizi/")
 
         if (isTvSeries) {
-            // Bölümleri HTML veya JSON-LD üzerinden tara
             val episodes = mutableListOf<Episode>()
 
             // 1. JSON-LD içinden tarama
@@ -142,7 +145,68 @@ class HdFilmCehennemiProvider : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data, headers = Utils.defaultHeaders).document
-        return Utils.extractAllVideoSources(document, data, subtitleCallback, callback)
+        var foundAny = false
+
+        // 1. Alternatif video kaynaklarını (data-video butonları) API üzerinden çöz
+        val buttons = document.select("button.alternative-link, div.alternative-links button")
+        for (button in buttons) {
+            val videoId = button.attr("data-video").trim()
+            val sourceName = button.text().replace("(HDrip Xbet)", "").trim().ifBlank { "HdFilmCehennemi" }
+
+            if (videoId.isNotBlank()) {
+                try {
+                    val apiResponse = app.get(
+                        "${mainUrl}/video/$videoId/",
+                        headers = mapOf(
+                            "Content-Type" to "application/json",
+                            "X-Requested-With" to "fetch"
+                        ),
+                        referer = data
+                    ).text
+
+                    val iframeSrc = Regex("""(?:data-src|src)=\\"([^"]+)""").find(apiResponse)?.groupValues?.get(1)?.replace("\\", "")
+
+                    if (!iframeSrc.isNullOrBlank()) {
+                        val finalIframe = when {
+                            iframeSrc.startsWith("//") -> "https:$iframeSrc"
+                            iframeSrc.startsWith("/") -> "${mainUrl}$iframeSrc"
+                            iframeSrc.contains("?rapidrame_id=") -> "${mainUrl}/playerr/" + iframeSrc.substringAfter("?rapidrame_id=")
+                            else -> iframeSrc
+                        }
+
+                        // Yerleşik CloudStream extractorlarını dene (Rapidrame, Vidmoly vb.)
+                        val loaded = loadExtractor(finalIframe, "${mainUrl}/", subtitleCallback, callback)
+                        if (loaded) foundAny = true
+
+                        // Gömülü player sayfasındaki JSON-LD veya m3u8 akışını tara
+                        try {
+                            val playerHtml = app.get(finalIframe, referer = "${mainUrl}/", headers = Utils.defaultHeaders).text
+                            val contentUrl = Regex(""""contentUrl":\s*"([^"]+)"""").find(playerHtml)?.groupValues?.get(1)
+                            if (!contentUrl.isNullOrBlank()) {
+                                callback.invoke(
+                                    newExtractorLink(
+                                        source = sourceName,
+                                        name = "$sourceName (HLS)",
+                                        url = contentUrl,
+                                        type = ExtractorLinkType.M3U8
+                                    ) {
+                                        this.referer = "${mainUrl}/"
+                                        this.quality = Qualities.P1080.value
+                                    }
+                                )
+                                foundAny = true
+                            }
+                        } catch (_: Exception) {}
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+
+        // 2. Sayfada doğrudan var olan iframe veya video kaynaklarını tara
+        val directFound = Utils.extractAllVideoSources(document, data, subtitleCallback, callback)
+        if (directFound) foundAny = true
+
+        return foundAny
     }
 
     private fun String.cleanTitle(): String {

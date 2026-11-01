@@ -10,6 +10,7 @@ CloudStream 3 için özel olarak hazırlanmış, reklamsız Türkçe dizi ve fil
 | :--- | :--- | :--- |
 | **Dizipal** | Dizi, Film, Anime | Popüler Diziler, Son Eklenen Filmler, Trendler |
 | **HdFilmCehennemi** | Film, Dizi | Full HD Türkçe Dublaj & Altyazılı Filmler, Yabancı Diziler |
+| **DiziBox** | Dizi | Kesintisiz Popüler Yabancı Diziler, Tüm Sezonlar |
 | **Yabancı Dizi** | Dizi, Film | Güncel Yabancı Diziler, Sezon & Bölüm Listeleri |
 
 ---
