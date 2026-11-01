@@ -43,10 +43,10 @@ subprojects {
 
     android {
         namespace = "com.fsociety"
+        compileSdkVersion(35)
 
         defaultConfig {
             minSdk = 21
-            compileSdkVersion(35)
             targetSdk = 35
         }
 

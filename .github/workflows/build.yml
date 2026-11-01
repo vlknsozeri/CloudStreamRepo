@@ -51,10 +51,9 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Build Plugins
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
           cd src
           chmod +x gradlew
