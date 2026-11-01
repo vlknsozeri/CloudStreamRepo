@@ -2,8 +2,10 @@ package com.fsociety
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import org.jsoup.nodes.Document
 
 object Utils {
@@ -21,7 +23,7 @@ object Utils {
      */
     suspend fun resolveActiveDomain(fallbackUrl: String): String {
         return try {
-            val response = app.get(fallbackUrl, headers = defaultHeaders, followRedirects = true)
+            val response = app.get(fallbackUrl, headers = defaultHeaders)
             val current = response.url.trimEnd('/')
             if (current.startsWith("http")) current else fallbackUrl
         } catch (_: Exception) {
@@ -64,14 +66,15 @@ object Utils {
         for (match in m3u8Regex.findAll(htmlContent)) {
             val streamUrl = match.groupValues[1].replace("\\/", "/")
             callback(
-                ExtractorLink(
+                newExtractorLink(
                     source = "Direkt Akış",
                     name = "HLS Akışı (Reklamsız)",
                     url = streamUrl,
-                    referer = referer,
-                    quality = Qualities.P1080.value,
-                    isM3u8 = true
-                )
+                    type = ExtractorLinkType.M3U8
+                ) {
+                    this.referer = referer
+                    this.quality = Qualities.P1080.value
+                }
             )
             foundAny = true
         }
