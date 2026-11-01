@@ -19,8 +19,7 @@ CloudStream 3 için özel olarak hazırlanmış, reklamsız Türkçe dizi ve fil
 GitHub'da yeni bir **Public (Herkese Açık)** depo oluşturun (örneğin: `CloudStreamRepo`) ve terminalde şu komutları çalıştırarak kodları gönderin:
 
 ```bash
-# GitHub kullanıcı adınızı ve repo adınızı girin:
-git remote add origin https://github.com/KULLANICI_ADINIZ/REPO_ADINIZ.git
+git remote add origin https://github.com/vlknsozeri/CloudStreamRepo.git
 git branch -M main
 git push -u origin main
 ```
@@ -45,7 +44,7 @@ Eklentilerin otomatik derlenip CloudStream'e hazır hale getirilmesi için GitHu
 Derleme tamamlandıktan sonra deponuzun bağlantısı şu formatta hazır olur:
 
 ```text
-https://raw.githubusercontent.com/KULLANICI_ADINIZ/REPO_ADINIZ/builds/repo.json
+https://raw.githubusercontent.com/vlknsozeri/CloudStreamRepo/builds/repo.json
 ```
 
 ### ⚡ Kısa Kod Oluşturma (TV ve Kolay Giriş İçin):
