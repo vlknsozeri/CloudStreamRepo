@@ -47,12 +47,11 @@ Derleme tamamlandıktan sonra deponuzun bağlantısı şu formatta hazır olur:
 https://raw.githubusercontent.com/vlknsozeri/CloudStreamRepo/builds/repo.json
 ```
 
-### ⚡ Kısa Kod Oluşturma (TV ve Kolay Giriş İçin):
-Uzun URL'yi tek tek yazmak yerine:
-1. Yukarıdaki bağlantıyı kopyalayın.
-2. [TinyURL.com](https://tinyurl.com) veya [is.gd](https://is.gd) gibi bir servise yapıştırın.
-3. Kendinize özel bir kısaltma belirleyin (Örn: `tinyurl.com/tr-dizi`).
-4. CloudStream uygulamasına sadece bu kısa bağlantıyı yazmanız yeterlidir! CloudStream yönlendirmeyi otomatik takip eder.
+### ⚡ Hazır Kısa Kodlar (TV ve Kolay Giriş İçin):
+CloudStream uygulamasında uzun URL yazmak yerine doğrudan şu kısa kodlardan birini yapıştırabilirsiniz:
+
+- **Özel Kısa Kod:** `https://is.gd/vlkn_stream`
+- **Alternatif:** `https://tinyurl.com/25c6vy7t`
 
 ---
 
