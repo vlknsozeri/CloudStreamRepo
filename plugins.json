@@ -1,9 +1,9 @@
 [
     {
-        "fileHash": "sha256-c4b9ab5fd6396b6e1934a97964be8f24affba7180129e06f2cfbda5ff52b9673",
+        "fileHash": "sha256-f235e61caac91fd0eb91865672cd350430e2efdfedb3c312064211c32b79a561",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/vlknsozeri/CloudStreamRepo",
-        "fileSize": 22343,
+        "fileSize": 32751,
         "status": 3,
         "authors": [
             "vlknsozeri"
